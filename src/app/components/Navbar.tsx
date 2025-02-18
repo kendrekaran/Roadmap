@@ -1,0 +1,204 @@
+import Link from "next/link"
+import { auth, signIn, signOut } from "@comp/auth"
+import { Button } from "@comp/components/ui/button"
+import { Camera, Menu, ChevronRight } from "lucide-react"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@comp/components/ui/dropdown-menu"
+
+export default async function Navbar() {
+  const session = await auth()
+  const user = session?.user
+
+  const navItems = [
+    { href: "/", label: "Home" },
+    { href: "/about", label: "About" },
+    { href: "/pricing", label: "Pricing" },
+    { href: "/contact", label: "Contact Us" },
+  ]
+
+  return (
+    <div className="fixed top-0 left-0 right-0 z-50 px-4 py-4 md:py-6">
+      <div className="mx-auto max-w-5xl">
+        <nav className="relative rounded-2xl bg-gradient-to-r from-black/80 to-black/60 backdrop-blur-xl border border-white/10 shadow-2xl shadow-black/20">
+          <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/10 to-purple-500/10 opacity-50" />
+          <div className="flex justify-between items-center h-16 md:h-20 px-4 md:px-8">
+            <div className="flex items-center">
+              <Link href="/" className="flex-shrink-0 relative group">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl blur-xl opacity-0 group-hover:opacity-40 transition-all duration-500" />
+                <img 
+                  className="h-8 md:h-10 w-auto relative bg-blue-700 p-2 rounded-xl shadow-lg group-hover:shadow-blue-500/50 transition-all duration-300 transform group-hover:scale-105" 
+                  src="/logo.svg" 
+                  alt="Your Logo" 
+                />
+              </Link>
+            </div>
+            
+            <div className="hidden md:block">
+              <div className="flex items-baseline space-x-1">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="relative text-white/90 hover:text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 hover:bg-white/10 group"
+                  >
+                    <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-all duration-300" />
+                    <span className="relative">{item.label}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            <div className="hidden md:block">
+              {user ? (
+                <div className="flex items-center space-x-4">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="relative w-12 h-12 p-0 rounded-xl overflow-hidden group">
+                        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-all duration-300" />
+                        {user.image ? (
+                          <div className="relative w-full h-full transform group-hover:scale-105 transition-all duration-300">
+                            <img
+                              src={user.image}
+                              alt="Profile"
+                              className="w-full h-full object-cover rounded-xl"
+                            />
+                            <div className="absolute inset-0 ring-2 ring-white/20 group-hover:ring-white/40 rounded-xl transition-all duration-300" />
+                          </div>
+                        ) : (
+                          <div className="relative w-full h-full rounded-xl bg-gradient-to-r from-blue-600/80 to-purple-600/80 flex items-center justify-center transform group-hover:scale-105 transition-all duration-300">
+                            <Camera className="h-6 w-6 text-white" />
+                            <div className="absolute inset-0 ring-2 ring-white/20 group-hover:ring-white/40 rounded-xl transition-all duration-300" />
+                          </div>
+                        )}
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" sideOffset={8} className="w-64 bg-black/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl shadow-black/20">
+                      <DropdownMenuItem className="hover:bg-white/10 focus:bg-white/10 text-white/90 px-4 py-3 group">
+                        <span className="relative flex items-center">
+                          Profile
+                          <ChevronRight className="w-4 h-4 ml-auto opacity-50 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all duration-200" />
+                        </span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="hover:bg-white/10 focus:bg-white/10 text-white/90 px-4 py-3 group">
+                        <span className="relative flex items-center">
+                          Settings
+                          <ChevronRight className="w-4 h-4 ml-auto opacity-50 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all duration-200" />
+                        </span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="hover:bg-white/10 focus:bg-white/10 px-4 py-3">
+                        <form
+                          action={async () => {
+                            "use server"
+                            await signOut()
+                          }}
+                        >
+                          <button className="w-full text-left text-white/90 group">
+                            <span className="relative flex items-center">
+                              Sign Out
+                              <ChevronRight className="w-4 h-4 ml-auto opacity-50 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all duration-200" />
+                            </span>
+                          </button>
+                        </form>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              ) : (
+                <form
+                  action={async () => {
+                    "use server"
+                    await signIn("google", { redirectTo: "/" })
+                  }}
+                >
+                  <Button variant="outline" size="lg" className="relative bg-white/5 rounded-xl hover:bg-white/10 text-white border-white/10 hover:border-white/20 group px-6">
+                    <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-all duration-300" />
+                    <span className="relative flex items-center">
+                      <img src="/google.svg" className="h-5 w-5 mr-3 opacity-90 group-hover:opacity-100 transition-opacity duration-200" alt="" />
+                      Sign In
+                    </span>
+                  </Button>
+                </form>
+              )}
+            </div>
+
+            <div className="block md:hidden">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="relative h-10 w-10 text-white/90 hover:text-white hover:bg-white/10 rounded-xl">
+                    <Menu className="h-8 w-8" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  alignOffset={-8}
+                  className="w-[calc(100vw-32px)] mt-2 mr-[-16px] bg-black/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl shadow-black/20"
+                >
+                  {user && (
+                    <div className="px-4 py-3 border-b border-white/10">
+                      <div className="flex items-center space-x-3">
+                        {user.image ? (
+                          <img src={user.image} alt="Profile" className="w-10 h-10 rounded-xl object-cover ring-2 ring-white/20" />
+                        ) : (
+                          <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-blue-600/80 to-purple-600/80 flex items-center justify-center">
+                            <Camera className="h-5 w-5 text-white" />
+                          </div>
+                        )}
+                        <div className="flex-1">
+                          <div className="text-sm font-medium text-white">{user.name}</div>
+                          <div className="text-xs text-white/60">{user.email}</div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {navItems.map((item) => (
+                    <DropdownMenuItem key={item.href} asChild className="px-4 py-3 hover:bg-white/10 focus:bg-white/10">
+                      <Link href={item.href} className="text-white/90 group">
+                        <span className="relative flex items-center">
+                          {item.label}
+                          <ChevronRight className="w-4 h-4 ml-auto opacity-50 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all duration-200" />
+                        </span>
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                  <DropdownMenuItem className="px-4 py-3 hover:bg-white/10 focus:bg-white/10">
+                    {user ? (
+                      <form
+                        action={async () => {
+                          "use server"
+                          await signOut()
+                        }}
+                        className="w-full"
+                      >
+                        <button className="w-full text-left text-white/90 group">
+                          <span className="relative flex items-center">
+                            Sign Out
+                            <ChevronRight className="w-4 h-4 ml-auto opacity-50 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all duration-200" />
+                          </span>
+                        </button>
+                      </form>
+                    ) : (
+                      <form
+                        action={async () => {
+                          "use server"
+                          await signIn("google", { redirectTo: "/" })
+                        }}
+                        className="w-full"
+                      >
+                        <button className="w-full text-left text-white/90 group">
+                          <span className="relative flex items-center">
+                            <img src="/google.svg" className="h-5 w-5 mr-3 opacity-90 group-hover:opacity-100 transition-opacity duration-200" alt="" />
+                            Sign In with Google
+                            <ChevronRight className="w-4 h-4 ml-auto opacity-50 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all duration-200" />
+                          </span>
+                        </button>
+                      </form>
+                    )}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </div>
+  )
+}
