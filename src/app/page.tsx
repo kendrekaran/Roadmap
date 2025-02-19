@@ -1,11 +1,10 @@
+
 import { auth, signIn, signOut } from "@comp/auth";
 import Navbar from "./components/Navbar";
-import { Button } from "@comp/components/ui/button";
-import { Camera } from "lucide-react";
-import { Input } from "@comp/components/ui/input";
-
+import Inputdata from "./components/Input";
 
 export default async function Home() {
+
   const roles = [  
     "Frontend Developer",  
     "Backend Developer",  
@@ -64,11 +63,7 @@ export default async function Home() {
                 "use server";
                 await signOut();
               }}>
-                <Input
-                  type="text" 
-                  className="text-white w-full px-8 py-5 bg-black border border-white/60  rounded-xl shadow-lg shadow-black/20 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent placeholder:text-white/60 transition-all duration-200 hover:shadow-xl hover:shadow-black/30"
-                  placeholder="Enter The Role"
-                />
+                <Inputdata />
               </form>
             </div>
           ) : (

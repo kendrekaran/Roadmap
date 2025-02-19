@@ -1,12 +1,25 @@
 import Link from "next/link"
+import Image from "next/image"
 import { auth, signIn, signOut } from "@comp/auth"
 import { Button } from "@comp/components/ui/button"
 import { Camera, Menu, ChevronRight } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@comp/components/ui/dropdown-menu"
+import { Session } from "next-auth"
+
+interface User {
+  image?: string | null
+  name?: string | null
+  email?: string | null
+}
+
+interface ProfileImageProps {
+  user: User
+  size?: "desktop" | "mobile"
+}
 
 export default async function Navbar() {
-  const session = await auth()
-  const user = session?.user
+  const session = await auth() as Session | null
+  const user = session?.user as User | undefined
 
   const navItems = [
     { href: "/", label: "Home" },
@@ -14,6 +27,31 @@ export default async function Navbar() {
     { href: "/pricing", label: "Pricing" },
     { href: "/contact", label: "Contact Us" },
   ]
+
+  const ProfileImage = ({ user, size = "desktop" }: ProfileImageProps) => {
+    const imageSize = size === "desktop" ? "w-12 h-12" : "w-10 h-10"
+    
+    if (!user?.image) {
+      return (
+        <div className={`${imageSize} rounded-xl bg-gradient-to-r from-blue-600/80 to-purple-600/80 flex items-center justify-center`}>
+          <Camera className={size === "desktop" ? "h-6 w-6" : "h-5 w-5"} />
+        </div>
+      )
+    }
+
+    return (
+      <div className="relative w-full h-full">
+        <Image
+          src={user.image}
+          alt={`${user.name || 'User'}'s profile`}
+          width={size === "desktop" ? 48 : 40}
+          height={size === "desktop" ? 48 : 40}
+          className="object-cover rounded-xl"
+          priority
+        />
+      </div>
+    )
+  }
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50 px-4 py-4 md:py-6">
@@ -54,21 +92,8 @@ export default async function Navbar() {
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" className="relative w-12 h-12 p-0 rounded-xl overflow-hidden group">
                         <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-all duration-300" />
-                        {user.image ? (
-                          <div className="relative w-full h-full transform group-hover:scale-105 transition-all duration-300">
-                            <img
-                              src={user.image}
-                              alt="Profile"
-                              className="w-full h-full object-cover rounded-xl"
-                            />
-                            <div className="absolute inset-0 ring-2 ring-white/20 group-hover:ring-white/40 rounded-xl transition-all duration-300" />
-                          </div>
-                        ) : (
-                          <div className="relative w-full h-full rounded-xl bg-gradient-to-r from-blue-600/80 to-purple-600/80 flex items-center justify-center transform group-hover:scale-105 transition-all duration-300">
-                            <Camera className="h-6 w-6 text-white" />
-                            <div className="absolute inset-0 ring-2 ring-white/20 group-hover:ring-white/40 rounded-xl transition-all duration-300" />
-                          </div>
-                        )}
+                        <ProfileImage user={user} size="desktop" />
+                        <div className="absolute inset-0 ring-2 ring-white/20 group-hover:ring-white/40 rounded-xl transition-all duration-300" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" sideOffset={8} className="w-64 bg-black/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl shadow-black/20">
@@ -135,13 +160,7 @@ export default async function Navbar() {
                   {user && (
                     <div className="px-4 py-3 border-b border-white/10">
                       <div className="flex items-center space-x-3">
-                        {user.image ? (
-                          <img src={user.image} alt="Profile" className="w-10 h-10 rounded-xl object-cover ring-2 ring-white/20" />
-                        ) : (
-                          <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-blue-600/80 to-purple-600/80 flex items-center justify-center">
-                            <Camera className="h-5 w-5 text-white" />
-                          </div>
-                        )}
+                        <ProfileImage user={user} size="mobile" />
                         <div className="flex-1">
                           <div className="text-sm font-medium text-white">{user.name}</div>
                           <div className="text-xs text-white/60">{user.email}</div>
