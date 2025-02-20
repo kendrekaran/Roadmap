@@ -1,7 +1,7 @@
 import { auth, signIn, signOut } from "@comp/auth";
 import Navbar from "./components/Navbar";
 import Inputdata from "./components/Input";
-import AnimatedTerminalQuotes from "./components/Quotes";
+import TerminalChat from "./components/Chatbot";
 
 export default async function Home() {
   const roles = [  
@@ -34,10 +34,10 @@ export default async function Home() {
     <div className="min-h-screen bg-gradient-to-b from-black via-blue-950/50 to-black overflow-hidden">
       <Navbar />
       
-      <main className="container mx-auto px-4 py-16 sm:py-32 text-center relative">
+      <main className="container mx-auto px-4 sm:py-8 text-center relative">
         
         {/* Hero Content */}
-        <div className="relative z-10 space-y-8 py-24">
+        <div className="relative z-10 space-y-8 py-16">
           <div className="space-y-4">
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-base bg-gradient-to-b from-white to-gray-600 text-transparent bg-clip-text max-w-4xl mx-auto leading-tight tracking-tight">
             Navigate Your&nbsp;
@@ -109,7 +109,7 @@ export default async function Home() {
             />
           </div> */}
 
-          <AnimatedTerminalQuotes />
+          <TerminalChat />
 
           <div className="mt-32 flex flex-wrap justify-center gap-6 overflow-hidden">
             {[1, 2, 3, 4, 5].map((i) => (

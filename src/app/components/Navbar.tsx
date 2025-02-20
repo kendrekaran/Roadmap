@@ -5,6 +5,7 @@ import { Button } from "@comp/components/ui/button"
 import { Camera, Menu, ChevronRight } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@comp/components/ui/dropdown-menu"
 import { Session } from "next-auth"
+import { redirect } from "next/navigation"
 
 interface User {
   image?: string | null
@@ -15,6 +16,10 @@ interface User {
 interface ProfileImageProps {
   user: User
   size?: "desktop" | "mobile"
+}
+
+interface FormAction {
+  (): Promise<void>
 }
 
 export default async function Navbar() {
@@ -53,8 +58,20 @@ export default async function Navbar() {
     )
   }
 
+  const handleSignOut: FormAction = async () => {
+    "use server"
+    await signOut()
+    redirect("/")
+  }
+
+  const handleSignIn: FormAction = async () => {
+    "use server"
+    await signIn("google", { redirectTo: "/" })
+    redirect("/")
+  }
+
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 px-4 py-4 md:py-6">
+    <div className="top-0 left-0 right-0 z-50 px-4 py-4 md:py-6">
       <div className="mx-auto max-w-5xl">
         <nav className="relative rounded-2xl bg-gradient-to-r from-black/80 to-black/60 backdrop-blur-xl border border-white/10 shadow-2xl shadow-black/20">
           <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/10 to-sky-500/10 opacity-50" />
@@ -105,12 +122,7 @@ export default async function Navbar() {
                         </span>
                       </DropdownMenuItem>
                       <DropdownMenuItem className="hover:bg-white/10 focus:bg-white/10 px-4 py-3">
-                        <form
-                          action={async () => {
-                            "use server"
-                            await signOut()
-                          }}
-                        >
+                        <form action={handleSignOut}>
                           <button className="w-full text-left text-white/90 group">
                             <span className="relative flex items-center">
                               Sign Out
@@ -123,12 +135,7 @@ export default async function Navbar() {
                   </DropdownMenu>
                 </div>
               ) : (
-                <form
-                  action={async () => {
-                    "use server"
-                    await signIn("google", { redirectTo: "/" })
-                  }}
-                >
+                <form action={handleSignIn}>
                   <Button variant="outline" size="lg" className="relative bg-white/5 rounded-xl hover:bg-white/10 text-white border-white/10 hover:border-white/20 group px-6">
                     <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/20 to-sky-500/20 opacity-0 group-hover:opacity-100 transition-all duration-300" />
                     <span className="relative flex items-center">
@@ -175,13 +182,7 @@ export default async function Navbar() {
                   ))}
                   <DropdownMenuItem className="px-4 py-3 hover:bg-white/10 focus:bg-white/10">
                     {user ? (
-                      <form
-                        action={async () => {
-                          "use server"
-                          await signOut()
-                        }}
-                        className="w-full"
-                      >
+                      <form action={handleSignOut} className="w-full">
                         <button className="w-full text-left text-white/90 group">
                           <span className="relative flex items-center">
                             Sign Out
@@ -190,13 +191,7 @@ export default async function Navbar() {
                         </button>
                       </form>
                     ) : (
-                      <form
-                        action={async () => {
-                          "use server"
-                          await signIn("google", { redirectTo: "/" })
-                        }}
-                        className="w-full"
-                      >
+                      <form action={handleSignIn} className="w-full">
                         <button className="w-full text-left text-white/90 group">
                           <span className="relative flex items-center">
                             <img src="/google.svg" className="h-5 w-5 mr-3 opacity-90 group-hover:opacity-100 transition-opacity duration-200" alt="" />

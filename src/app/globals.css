@@ -19,3 +19,45 @@ body {
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@layer utilities {
+  .hide-scrollbar-track {
+    scrollbar-width: thin; /* For Firefox */
+    scrollbar-color: transparent transparent; /* Thumb and track color */
+  }
+
+  .hide-scrollbar-track::-webkit-scrollbar {
+    width: 8px; /* Adjust scrollbar width */
+  }
+
+  .hide-scrollbar-track::-webkit-scrollbar-track {
+    background: transparent; /* Hide the track */
+  }
+
+  .hide-scrollbar-track::-webkit-scrollbar-thumb {
+    background: #888; /* Customize thumb color */
+    border-radius: 4px; /* Optional: Add rounded corners */
+  }
+}
+
+@layer base {
+  body {
+    @apply antialiased;
+  }
+}
+
+/* Fade in animation for messages */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.message-enter {
+  animation: fadeIn 0.3s ease-out forwards;
+}
