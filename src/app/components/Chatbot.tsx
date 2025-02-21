@@ -94,7 +94,7 @@ function TerminalChat() {
           role: 'assistant', 
           content: text, 
           timestamp: new Date().toLocaleTimeString(),
-          displayContent: '' // Initialize empty display content for typing effect
+          displayContent: '' 
         }
       ]);
     } catch (error) {
@@ -210,7 +210,7 @@ function TerminalChat() {
             {isTyping && (
               <div className="flex items-center space-x-2 text-blue-400 pl-2 pt-2 animate-pulse">
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span className="text-xs">Processing...</span>
+                <span className="text-xs">Thinking...</span>
               </div>
             )}
 
