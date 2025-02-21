@@ -4,23 +4,33 @@
 import React, { useState } from 'react';
 import { Input } from '@comp/components/ui/input';
 import { Code2, Search } from 'lucide-react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
-export default function InputData() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const [inputData, setInputData] = useState(searchParams.get('data') || '');
+export default function ImputDat() {
+  const [inputData, setInputData] = useState('');
   const [isFocused, setIsFocused] = useState(false);
+  const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (inputData.trim()) {
+      try {
+        // Send data to API route
+        const response = await fetch('/api/setData', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ data: inputData }),
+        });
 
-      const params = new URLSearchParams(searchParams);
-
-      params.set('data', inputData);
-      // Navigate with the updated search params
-      router.push(`/roadmap?${params.toString()}`);
+        if (response.ok) {
+          // Navigate to roadmap page
+          router.push('/roadmap');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      }
     }
   };
 
