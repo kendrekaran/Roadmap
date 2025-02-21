@@ -4,28 +4,28 @@ import Inputdata from "./components/Input";
 import TerminalChat from "./components/Chatbot";
 
 export default async function Home() {
-  const roles = [  
-    "Frontend Developer",  
-    "Backend Developer",  
-    "Full Stack Developer",  
-    "Mobile App Developer",  
-    "Game Developer",  
-    "Data Analyst",  
-    "Data Scientist",  
-    "Machine Learning Engineer",  
-    "AI Engineer",  
-    "DevOps Engineer",  
-    "Cloud Engineer",  
-    "Site Reliability Engineer",  
-    "Security Engineer",  
-    "Ethical Hacker",  
-    "Product Manager",  
-    "Project Manager",  
-    "QA Engineer",  
-    "Automation Tester",  
-    "Blockchain Developer",  
-    "Embedded Systems Engineer"  
-  ];  
+  // const roles = [  
+  //   "Frontend Developer",  
+  //   "Backend Developer",  
+  //   "Full Stack Developer",  
+  //   "Mobile App Developer",  
+  //   "Game Developer",  
+  //   "Data Analyst",  
+  //   "Data Scientist",  
+  //   "Machine Learning Engineer",  
+  //   "AI Engineer",  
+  //   "DevOps Engineer",  
+  //   "Cloud Engineer",  
+  //   "Site Reliability Engineer",  
+  //   "Security Engineer",  
+  //   "Ethical Hacker",  
+  //   "Product Manager",  
+  //   "Project Manager",  
+  //   "QA Engineer",  
+  //   "Automation Tester",  
+  //   "Blockchain Developer",  
+  //   "Embedded Systems Engineer"  
+  // ];  
 
   const session = await auth();
   const user = session?.user;
