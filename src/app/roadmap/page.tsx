@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 };
 
 async function getData() {
-  const response = await fetch('http://localhost:3000/api/setData', {
+  const response = await fetch('https://skill-paths.vercel.app/api/setData', {
     cache: 'no-store'
   });
   const data = await response.json();
