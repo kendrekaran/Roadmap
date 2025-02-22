@@ -3,6 +3,7 @@ import Navbar from "./components/Navbar";
 import Inputdata from "./components/Input";
 import TerminalChat from "./components/Chatbot";
 
+
 export default async function Home() {
   // const roles = [  
   //   "Frontend Developer",  

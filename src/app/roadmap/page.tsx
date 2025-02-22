@@ -4,7 +4,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import ReactMarkdown from 'react-markdown';
 import { Card, CardContent } from '@comp/components/ui/card';
 import { Loader2 } from 'lucide-react';
-import SkillsChart from "../components/SkillsChart";
+
 
 const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY || "");
 const model = genAI.getGenerativeModel({ model: "gemini-pro" });
@@ -34,29 +34,29 @@ async function generateRoadmap(career: string) {
     const prompt = `Create a programming languages roadmap for ${career}. Structure the response as follows:
 
 🎯 Beginner Level
-• [Language Name] - [Single line on why it's essential for ${career}]
-• [Language Name] - [Single line on why it's essential for ${career}]
-• [Language Name] - [Single line on why it's essential for ${career}]
-• [Language Name] - [Single line on why it's essential for ${career}]
+• [Language Name/Altenate option if any] - [Show the minimum required time to complete]
+• [Language Name/Altenate option if any] - [Show the minimum required time to complete]
+• [Language Name/Altenate option if any] - [Show the minimum required time to complete]
+• [Language Name/Altenate option if any] - [Show the minimum required time to complete]
 
 
 🚀 Intermediate Level
-• [Language Name] - [Single line on why it's essential for ${career}]
-• [Language Name] - [Single line on why it's essential for ${career}]
-• [Language Name] - [Single line on why it's essential for ${career}]
-• [Language Name] - [Single line on why it's essential for ${career}]
+• [Language Name/Altenate option if any] - [Show the minimum required time to complete]
+• [Language Name/Altenate option if any] - [Show the minimum required time to complete]
+• [Language Name/Altenate option if any] - [Show the minimum required time to complete]
+• [Language Name/Altenate option if any] - [Show the minimum required time to complete]
 
 
 
 ⭐ Advanced Level
-• [Language Name] - [Single line on why it's essential for ${career}]
-• [Language Name] - [Single line on why it's essential for ${career}]
-• [Language Name] - [Single line on why it's essential for ${career}]
-• [Language Name] - [Single line on why it's essential for ${career}]
+• [Language Name/Altenate option if any] - [Show the minimum required time to complete]
+• [Language Name/Altenate option if any] - [Show the minimum required time to complete]
+• [Language Name/Altenate option if any] - [Show the minimum required time to complete]
+• [Language Name/Altenate option if any] - [Show the minimum required time to complete]
 
 Rules:
 1. Only include programming languages, no frameworks or tools
-2. Keep descriptions under 8 words
+2. If the input is not a valid language show it is not a valid language
 3. List in order of importance for ${career}
 4. Maximum 3-4 languages per level
 5. Focus on languages specifically relevant to ${career}`;
@@ -91,7 +91,7 @@ export default async function RoadmapPage() {
             </h1>
           </div>
 
-          {roadmap && <SkillsChart markdownContent={roadmap} />}
+
 
           <Card className="mt-8 max-w-4xl mx-auto bg-gray-900/50 backdrop-blur-lg border-gray-800">
             <CardContent className="p-6">

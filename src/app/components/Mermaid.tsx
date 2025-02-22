@@ -1,42 +1,25 @@
-// components/Mermaid.tsx
-'use client';
-
+// components/MermaidChart.js
+"use client"
+import dynamic from 'next/dynamic';
 import { useEffect, useRef } from 'react';
 import mermaid from 'mermaid';
 
-interface MermaidProps {
-  chart: string;
-}
-
-export default function Mermaid({ chart }: MermaidProps) {
-  const mermaidRef = useRef<HTMLDivElement>(null);
+const MermaidChart = ({ chart }) => {
+  const chartRef = useRef(null);
 
   useEffect(() => {
-    if (!mermaidRef.current) return;
+    // Initialize Mermaid
+    mermaid.initialize({ startOnLoad: false, theme: 'default' });
 
-    const renderDiagram = async () => {
-      mermaid.initialize({
-        startOnLoad: true,
-        theme: 'dark',
-        securityLevel: 'loose',
-      });
-
-      try {
-        const { svg } = await mermaid.render('mermaid-diagram', chart);
-        if (mermaidRef.current) {
-          mermaidRef.current.innerHTML = svg;
-        }
-      } catch (error) {
-        console.error('Mermaid rendering error:', error);
-      }
-    };
-
-    renderDiagram();
+    // Render the chart
+    if (chartRef.current) {
+      chartRef.current.innerHTML = chart;
+      mermaid.init(undefined, chartRef.current);
+    }
   }, [chart]);
 
-  return (
-    <div className="flex justify-center">
-      <div ref={mermaidRef} className="mermaid-container w-full" />
-    </div>
-  );
-}
+  return <div ref={chartRef} className="mermaid"></div>;
+};
+
+// Disable SSR for this component
+export default dynamic(() => Promise.resolve(MermaidChart), { ssr: false });
