@@ -1,7 +1,7 @@
 import { auth, signIn, signOut } from "@comp/auth";
-import Navbar from "./components/Navbar";
-import Inputdata from "./components/Input";
-import TerminalChat from "./components/Chatbot";
+import Navbar from "./component/Navbar";
+import Inputdata from "./component/Input";
+import TerminalChat from "./component/Chatbot";
 
 
 export default async function Home() {

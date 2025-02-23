@@ -1,219 +1,233 @@
-import { Metadata } from "next";
-import Navbar from "../components/Navbar";
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import ReactMarkdown from 'react-markdown';
-import { Card, CardContent } from '@comp/components/ui/card';
-import { Loader2 } from 'lucide-react';
+import type { Metadata } from "next"
+import React from "react"
+import Navbar from "../component/Navbar"
+import { GoogleGenerativeAI } from "@google/generative-ai"
+import { Code2 } from "lucide-react"
+import { RoadmapCard } from "../component/Roadmap"
 
 
-const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY || "");
-const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+const API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY
+if (!API_KEY) {
+  throw new Error("Missing Gemini API key")
+}
+
+const genAI = new GoogleGenerativeAI(API_KEY)
+const model = genAI.getGenerativeModel({ model: "gemini-pro" })
 
 export const metadata: Metadata = {
-  title: 'Programming Languages Roadmap',
-};
+  title: "Programming Languages Roadmap",
+  description: "Custom programming language roadmap for your career path",
+}
 
-async function getData() {
+interface LanguageNode {
+  name: string
+  timeToComplete: string
+  alternatives?: string[]
+  description: string
+  keyFeatures: string[]
+  useCases: string[]
+  learningResources: {
+    name: string
+    url: string
+  }[]
+}
+
+interface RoadmapLevel {
+  level: string
+  emoji: string
+  color: string
+  languages: LanguageNode[]
+}
+
+interface RoadmapData {
+  career: string
+  levels: RoadmapLevel[]
+}
+
+interface RoadmapResponse {
+  roadmap: RoadmapData | null
+  error: string | null
+}
+
+interface PageData {
+  data: string
+}
+
+
+
+
+async function getData(): Promise<string> {
   try {
-    const response = await fetch('http://localhost:3000/api/setData', {
-      cache: 'no-store'
-    });
+    const response = await fetch("http://localhost:3000/api/setData", {
+      cache: "no-store",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+
     if (!response.ok) {
-      throw new Error('Network response was not ok');
+      throw new Error(`HTTP error! status: ${response.status}`)
     }
-    const data = await response.json();
-    return data.data;
+
+    const data = await response.json() as PageData
+    return data.data || "Developer"
   } catch (error) {
-    console.error('Error fetching data:', error);
-    return 'Developer'; // Default fallback value
+    console.error("Error fetching data:", error)
+    return "Developer"
   }
 }
 
-async function generateRoadmap(career: string) {
+async function generateRoadmap(career: string): Promise<RoadmapResponse> {
+  if (!career?.trim()) {
+    return { roadmap: null, error: 'Career field is required' };
+  }
+
   try {
-    const prompt = `Create a programming languages roadmap for ${career}. Structure the response as follows:
-
-🎯 Beginner Level
-• [Language Name/Altenate option if any] - [Show the minimum required time to complete]
-• [Language Name/Altenate option if any] - [Show the minimum required time to complete]
-• [Language Name/Altenate option if any] - [Show the minimum required time to complete]
-• [Language Name/Altenate option if any] - [Show the minimum required time to complete]
-
-
-🚀 Intermediate Level
-• [Language Name/Altenate option if any] - [Show the minimum required time to complete]
-• [Language Name/Altenate option if any] - [Show the minimum required time to complete]
-• [Language Name/Altenate option if any] - [Show the minimum required time to complete]
-• [Language Name/Altenate option if any] - [Show the minimum required time to complete]
-
-
-
-⭐ Advanced Level
-• [Language Name/Altenate option if any] - [Show the minimum required time to complete]
-• [Language Name/Altenate option if any] - [Show the minimum required time to complete]
-• [Language Name/Altenate option if any] - [Show the minimum required time to complete]
-• [Language Name/Altenate option if any] - [Show the minimum required time to complete]
+    // Simplified prompt structure
+    const prompt = `Create a programming roadmap for ${career} with EXACTLY this JSON structure and no additional text:
+{
+  "career": "${career}",
+  "levels": [
+    {
+      "level": "Beginner",
+      "emoji": "🎯",
+      "color": "blue",
+      "languages": [
+        {
+          "name": "Language name",
+          "timeToComplete": "X-Y months",
+          "alternatives": ["Alt1", "Alt2"],
+          "description": "Brief description",
+          "keyFeatures": ["Feature 1", "Feature 2", "Feature 3"],
+          "useCases": ["Use case 1", "Use case 2"],
+          "learningResources": [
+            {
+              "name": "Resource name",
+              "url": "https://example.com"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
 
 Rules:
-1. Only include programming languages, no frameworks or tools
-2. If the input is not a valid language show it is not a valid language
-3. List in order of importance for ${career}
-4. Maximum 3-4 languages per level
-5. Focus on languages specifically relevant to ${career}`;
+- 3 levels only: Beginner (blue/🎯), Intermediate (purple/⚡), Advanced (gold/🎮)
+- 3-4 languages per level
+- All text must be properly escaped
+- No trailing commas
+- Valid JSONv`;
 
     const result = await model.generateContent(prompt);
-    const text = result.response.text();
-    
-    if (!text || text.toLowerCase().includes('undefined')) {
-      throw new Error('Invalid response from AI');
+    let text = result.response.text().trim();
+
+    // Clean and validate JSON
+    try {
+      // Remove any markdown formatting
+      text = text.replace(/```json\s*|\s*```/g, '').trim();
+      
+      // Try to find the JSON object boundaries
+      const startIdx = text.indexOf('{');
+      const endIdx = text.lastIndexOf('}');
+      
+      if (startIdx === -1 || endIdx === -1) {
+        throw new Error('Invalid JSON structure');
+      }
+
+      // Extract just the JSON part
+      text = text.slice(startIdx, endIdx + 1);
+
+      // Parse the cleaned JSON
+      const data = JSON.parse(text);
+
+      // Basic validation
+      if (!data.career || !Array.isArray(data.levels)) {
+        throw new Error('Missing required fields');
+      }
+
+      // Ensure exactly 3 levels
+      if (data.levels.length !== 3) {
+        throw new Error('Must have exactly 3 levels');
+      }
+
+      // Validate level structure
+      data.levels.forEach((level: RoadmapLevel) => {
+        if (!level.level || !level.emoji || !level.color || !Array.isArray(level.languages)) {
+          throw new Error('Invalid level structure');
+        }
+        
+        // Validate languages
+        level.languages.forEach((lang: LanguageNode) => {
+          if (!lang.name || !lang.timeToComplete || !lang.description || 
+              !Array.isArray(lang.keyFeatures) || !Array.isArray(lang.useCases) || 
+              !Array.isArray(lang.learningResources)) {
+            throw new Error('Invalid language structure');
+          }
+        });
+      });
+
+      return { roadmap: data as RoadmapData, error: null };
+    } catch (parseError) {
+      console.error('JSON parsing error:', parseError);
+      console.log('Raw response:', text);
+      return { 
+        roadmap: null, 
+        error: 'Failed to parse AI response' 
+      };
     }
-    
-    return { roadmap: text, error: null };
   } catch (error) {
-    console.error('Error:', error);
-    return { roadmap: null, error: 'Failed to generate roadmap. Please try again.' };
+    console.error('Generation error:', error);
+    return { 
+      roadmap: null, 
+      error: 'Failed to generate roadmap' 
+    };
   }
 }
 
-export default async function RoadmapPage() {
-  const career = await getData();
-  const { roadmap, error } = await generateRoadmap(career);
+const RoadmapPage = async () => {
+  const career = await getData()
+  const { roadmap, error } = await generateRoadmap(career)
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-blue-950/50 to-black overflow-hidden">
+    <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-600/20 via-gray-900 to-black/80">
+      <div className="fixed inset-0 bg-[url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80')] opacity-10 bg-cover bg-center" />
       <Navbar />
       
-      <main className="container mx-auto px-4 sm:py-8 text-center relative">
-        <div className="relative z-10 space-y-8 py-16">
-          <div className="space-y-4">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-base bg-gradient-to-b from-white to-gray-600 text-transparent bg-clip-text max-w-4xl mx-auto leading-tight tracking-tight">
-              Programming Languages: {career}
-            </h1>
+      <div className="relative container mx-auto px-4 py-16">
+        <div className="text-center mb-16 space-y-4">
+          <div className="flex items-center justify-center gap-3 text-blue-500 mb-4">
+            <Code2 className="w-6 h-6" />
+            <h2 className="text-xl font-medium">Programming Roadmap</h2>
+            <Code2 className="w-6 h-6" />
           </div>
-
-
-
-          <Card className="mt-8 max-w-4xl mx-auto bg-gray-900/50 backdrop-blur-lg border-gray-800">
-            <CardContent className="p-6">
-              {error ? (
-                <div className="text-red-500 text-center p-4">{error}</div>
-              ) : !roadmap ? (
-                <div className="flex justify-center items-center h-64">
-                  <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
-                  <p className="ml-2 text-gray-400">Generating language roadmap...</p>
-                </div>
-              ) : (
-                <div className="relative py-8">
-                  <div className="absolute left-1/2 top-0 bottom-0 w-1 bg-blue-500/20 transform -translate-x-1/2"></div>
-                  <ReactMarkdown
-                    components={{
-                      p: ({ children }) => {
-                        const text = children?.toString() || ""
-                        const sections = text.split("\n\n")
-
-                        return (
-                          <>
-                            {sections.map((section, index) => {
-                              const [header, ...items] = section.split("\n")
-
-                              if (header.includes("🎯")) {
-                                return (
-                                  <div key={index} className="mb-12">
-                                    <div className="flex items-center mb-6">
-                                      <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center z-10">
-                                        <span className="text-xl">🎯</span>
-                                      </div>
-                                      <h2 className="ml-4 text-2xl font-bold bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
-                                        Beginner Level
-                                      </h2>
-                                    </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                      {items.map((item, i) => (
-                                        <div key={i} className="transform transition-all duration-300 hover:scale-105">
-                                          <div className="bg-gray-800/50 hover:bg-gray-700/50 rounded-lg p-4 border border-gray-700 hover:border-blue-500/50">
-                                            <div className="flex items-center gap-3">
-                                              <div className="h-2 w-2 rounded-full bg-blue-500" />
-                                              <span className="text-gray-200 text-sm">{item.replace("• ", "")}</span>
-                                            </div>
-                                          </div>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </div>
-                                )
-                              } else if (header.includes("🚀")) {
-                                return (
-                                  <div key={index} className="mb-12">
-                                    <div className="flex items-center mb-6">
-                                      <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center z-10">
-                                        <span className="text-xl">🚀</span>
-                                      </div>
-                                      <h2 className="ml-4 text-2xl font-bold bg-gradient-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent">
-                                        Intermediate Level
-                                      </h2>
-                                    </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                      {items.map((item, i) => (
-                                        <div key={i} className="transform transition-all duration-300 hover:scale-105">
-                                          <div className="bg-gray-800/50 hover:bg-gray-700/50 rounded-lg p-4 border border-gray-700 hover:border-purple-500/50">
-                                            <div className="flex items-center gap-3">
-                                              <div className="h-2 w-2 rounded-full bg-purple-500" />
-                                              <span className="text-gray-200 text-sm">{item.replace("• ", "")}</span>
-                                            </div>
-                                          </div>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </div>
-                                )
-                              } else if (header.includes("⭐")) {
-                                return (
-                                  <div key={index} className="mb-12">
-                                    <div className="flex items-center mb-6">
-                                      <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center z-10">
-                                        <span className="text-xl">⭐</span>
-                                      </div>
-                                      <h2 className="ml-4 text-2xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">
-                                        Advanced Level
-                                      </h2>
-                                    </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                      {items.map((item, i) => (
-                                        <div key={i} className="transform transition-all duration-300 hover:scale-105">
-                                          <div className="bg-gray-800/50 hover:bg-gray-700/50 rounded-lg p-4 border border-gray-700 hover:border-yellow-500/50">
-                                            <div className="flex items-center gap-3">
-                                              <div className="h-2 w-2 rounded-full bg-yellow-500" />
-                                              <span className="text-gray-200 text-sm">{item.replace("• ", "")}</span>
-                                            </div>
-                                          </div>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </div>
-                                )
-                              }
-                              return null
-                            })}
-                          </>
-                        )
-                      },
-                    }}
-                  >
-                    {roadmap}
-                  </ReactMarkdown>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <div className="mt-16 text-center">
-            <p className="text-gray-400 text-sm">
-              This roadmap focuses on programming languages essential for your career path.
-              Consider learning frameworks and tools specific to each language as you progress.
-            </p>
-          </div>
+          
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-500">
+            Your Learning Path
+          </h1>
+          
+          <p className="text-gray-400 max-w-2xl mx-auto">
+            Follow this curated roadmap to master programming languages from beginner to advanced level
+          </p>
         </div>
-      </main>
+
+        <div className="relative ">
+          <div className="absolute  left-7 top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-500/60 via-purple-500/60 to-yellow-500/60"></div>
+          
+          {roadmap?.levels?.map((level, index) => (
+            <RoadmapCard key={level.level} level={level} index={index} />
+          ))}
+        </div>
+
+        <div className="mt-16 text-center">
+          <p className="text-gray-400 text-sm max-w-2xl mx-auto">
+            This roadmap is designed to guide you through your programming journey. 
+            Remember to practice regularly and build projects along the way to reinforce your learning.
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
+
+export default RoadmapPage

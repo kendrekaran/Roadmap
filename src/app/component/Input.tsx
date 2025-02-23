@@ -1,36 +1,38 @@
-
 'use client';
 
 import React, { useState } from 'react';
 import { Input } from '@comp/components/ui/input';
-import { Code2, Search } from 'lucide-react';
+import { Code2, Search, Loader2 } from 'lucide-react'; 
 import { useRouter } from 'next/navigation';
 
 export default function ImputDat() {
   const [inputData, setInputData] = useState('');
   const [isFocused, setIsFocused] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); 
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (inputData.trim()) {
-      try {
-        // Send data to API route
-        const response = await fetch('/api/setData', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ data: inputData }),
-        });
+    if (!inputData.trim() || isLoading) return;
 
-        if (response.ok) {
-          // Navigate to roadmap page
-          router.push('/roadmap');
-        }
-      } catch (error) {
-        console.error('Error:', error);
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/setData', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ data: inputData }),
+      });
+
+      if (response.ok) {
+        await router.push('/roadmap');
+      } else {
+        throw new Error('Failed to set data');
       }
+    } catch (error) {
+      console.error('Error:', error);
+      setIsLoading(false);
     }
   };
 
@@ -71,15 +73,21 @@ export default function ImputDat() {
           type="submit"
           className={`
             relative flex items-center justify-center
-            h-14 w-14 rounded-xl bg-blue-800
+            h-14 w-14 rounded-xl
+            ${isLoading ? 'bg-blue-600' : 'bg-blue-800'}
             transition-all duration-300 ease-out
             hover:bg-blue-400 hover:scale-105 active:scale-95
-            disabled:opacity-50 disabled:hover:scale-100
-            ${!inputData.trim() && 'opacity-50 cursor-not-allowed'}
+            disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed
           `}
-          disabled={!inputData.trim()}
+          disabled={!inputData.trim() || isLoading} 
         >
-          <Search className="h-6 w-6 text-white" />
+          {isLoading ? (
+            <div className="animate-spin">
+              <Loader2 className="h-6 w-6 text-white" />
+            </div>
+          ) : (
+            <Search className="h-6 w-6 text-white" /> 
+          )}
           <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-blue-800 opacity-0 blur transition-opacity duration-300 group-hover:opacity-30" />
         </button>
       </div>
