@@ -58,7 +58,7 @@ interface PageData {
 
 async function getData(): Promise<string> {
   try {
-    const response = await fetch("http://localhost:3000/api/setData", {
+    const response = await fetch("https://sill-path.vercel.app/api/setData", {
       cache: "no-store",
       headers: {
         "Content-Type": "application/json",
