@@ -24,28 +24,28 @@ interface RoadmapLevel {
 
 const colorSchemes = {
   blue: {
-    gradient: "bg-gradient-to-br from-blue-600 to-blue-800",
-    border: "hover:border-blue-500",
-    shadow: "hover:shadow-blue-700/30",
-    text: "text-blue-200",
-    badge: "bg-blue-900/50 text-blue-200",
-    accent: "from-blue-200 to-blue-400"
+    gradient: "bg-gradient-to-r from-blue-400 to-blue-600",
+    border: "hover:border-blue-400/50",
+    shadow: "hover:shadow-blue-400/20",
+    text: "text-blue-50",
+    badge: "bg-blue-500/20 text-blue-100",
+    accent: "from-blue-100 to-blue-300"
   },
   purple: {
-    gradient: "bg-gradient-to-br from-violet-600 to-violet-800",
-    border: "hover:border-violet-500",
-    shadow: "hover:shadow-violet-700/30",
-    text: "text-violet-200",
-    badge: "bg-violet-900/50 text-violet-200",
-    accent: "from-violet-200 to-violet-400"
+    gradient: "bg-gradient-to-r from-violet-400 to-violet-600",
+    border: "hover:border-violet-400/50",
+    shadow: "hover:shadow-violet-400/20",
+    text: "text-violet-50",
+    badge: "bg-violet-500/20 text-violet-100",
+    accent: "from-violet-100 to-violet-300"
   },
   gold: {
-    gradient: "bg-gradient-to-br from-amber-600 to-amber-800",
-    border: "hover:border-amber-500",
-    shadow: "hover:shadow-amber-700/30",
-    text: "text-amber-200",
-    badge: "bg-amber-900/50 text-amber-200",
-    accent: "from-amber-200 to-amber-400"
+    gradient: "bg-gradient-to-r from-amber-400 to-amber-600",
+    border: "hover:border-amber-400/50",
+    shadow: "hover:shadow-amber-400/20",
+    text: "text-amber-50",
+    badge: "bg-amber-500/20 text-amber-100",
+    accent: "from-amber-100 to-amber-300"
   }
 };
 
@@ -55,23 +55,25 @@ export const RoadmapCard: React.FC<{ level: RoadmapLevel; index: number }> = ({ 
                            level.level.toLowerCase() === 'intermediate' ? 'purple' : 'gold'];
 
   return (
-    <div className="mb-16">
-      <div className="flex items-center mb-8 gap-6">
+    <div className="mb-24">
+      <div className="flex items-center mb-12 gap-8">
         <div className={`
-          w-16 h-16 
+          w-24 h-24 
           ${scheme.gradient}
           rounded-2xl 
           flex items-center justify-center 
-          shadow-lg 
+          shadow-lg
           ring-1 ring-white/10
+          backdrop-blur-xl
+          transform hover:scale-105 transition-all duration-500
         `}>
-          <span className="text-3xl">{level.emoji}</span>
+          <span className="text-5xl">{level.emoji}</span>
         </div>
         <div>
-          <h2 className={`text-3xl font-bold bg-gradient-to-r ${scheme.accent} bg-clip-text text-transparent`}>
+          <h2 className={`text-5xl font-bold bg-gradient-to-r ${scheme.accent} bg-clip-text text-transparent tracking-tight`}>
             {level.level} Level
           </h2>
-          <p className="text-gray-400 mt-1">Master these technologies</p>
+          <p className="text-gray-400 mt-3 text-xl font-light">Master these technologies</p>
         </div>
       </div>
 
@@ -80,50 +82,54 @@ export const RoadmapCard: React.FC<{ level: RoadmapLevel; index: number }> = ({ 
           <Card
             key={`${level.level}-${lang.name}-${idx}`}
             className={`
-              backdrop-blur-sm
-              bg-gray-900/90
-              border-gray-800/50 
+              backdrop-blur-xl
+              bg-gray-950/40
+              border-gray-800/20 
               ${scheme.border}
-              hover:shadow-xl 
+              hover:shadow-2xl 
               ${scheme.shadow}
               transition-all 
-              duration-300
+              duration-500
               group
+              rounded-2xl
+              hover:-translate-y-1
+              hover:bg-gray-900/50
             `}
           >
             <CardHeader 
-              className="cursor-pointer select-none"
+              className="cursor-pointer select-none px-8 py-6"
               onClick={() => setExpandedCard(expandedCard === lang.name ? null : lang.name)}
             >
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-6">
                   <div className={`
                     h-3 w-3 rounded-full 
                     ${scheme.gradient}
                     group-hover:animate-pulse
                     ring-1 ring-white/20
                   `} />
-                  <span className="text-gray-100 font-semibold text-lg">
+                  <span className="text-gray-50 font-medium text-2xl tracking-tight">
                     {lang.name}
                   </span>
                 </div>
                 <ChevronDown 
                   className={`
-                    w-5 h-5 
-                    ${scheme.text} 
-                    transition-transform 
+                    w-6 h-6 
+                    ${scheme.text}
+                    transition-all duration-300 ease-in-out
                     ${expandedCard === lang.name ? 'rotate-180' : ''}
+                    opacity-60 group-hover:opacity-100
                   `} 
                 />
               </div>
 
-              <div className="pl-7 space-y-3 mt-3">
-                <div className="flex items-center gap-4">
-                  <Badge variant="secondary" className={scheme.badge}>
+              <div className="pl-9 space-y-4 mt-4">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <Badge variant="secondary" className={`${scheme.badge} px-4 py-1.5 text-sm font-medium rounded-full`}>
                     ⏱ {lang.timeToComplete}
                   </Badge>
                   {lang.alternatives && (
-                    <Badge variant="secondary" className={scheme.badge}>
+                    <Badge variant="secondary" className={`${scheme.badge} px-4 py-1.5 text-sm font-medium rounded-full`}>
                       ↔ Alternatives: {lang.alternatives.join(", ")}
                     </Badge>
                   )}
@@ -132,23 +138,23 @@ export const RoadmapCard: React.FC<{ level: RoadmapLevel; index: number }> = ({ 
             </CardHeader>
 
             {expandedCard === lang.name && (
-              <CardContent className="space-y-6 pt-2 pl-7">
+              <CardContent className="space-y-10 px-8 pb-8">
                 {lang.description && (
-                  <p className="text-gray-300 leading-relaxed">
+                  <p className="text-gray-300 leading-relaxed text-lg font-light">
                     {lang.description}
                   </p>
                 )}
 
                 {lang.keyFeatures && (
-                  <div className="space-y-3">
-                    <h4 className="font-medium flex items-center gap-2 text-gray-100">
-                      <Code2 className={`w-4 h-4 ${scheme.text}`} />
+                  <div className="space-y-4">
+                    <h4 className="font-medium flex items-center gap-3 text-gray-100 text-lg">
+                      <Code2 className={`w-5 h-5 ${scheme.text}`} />
                       Key Features
                     </h4>
-                    <ul className="grid gap-2">
+                    <ul className="grid gap-3 pl-2">
                       {lang.keyFeatures.map((feature, i) => (
-                        <li key={i} className="text-gray-400 flex items-start gap-2">
-                          <span className={`${scheme.text} text-sm`}>•</span>
+                        <li key={i} className="text-gray-400 flex items-start gap-3 text-base font-light">
+                          <span className={`${scheme.text} text-sm mt-1.5`}>◆</span>
                           {feature}
                         </li>
                       ))}
@@ -157,15 +163,15 @@ export const RoadmapCard: React.FC<{ level: RoadmapLevel; index: number }> = ({ 
                 )}
 
                 {lang.useCases && (
-                  <div className="space-y-3">
-                    <h4 className="font-medium flex items-center gap-2 text-gray-100">
-                      <Target className={`w-4 h-4 ${scheme.text}`} />
+                  <div className="space-y-4">
+                    <h4 className="font-medium flex items-center gap-3 text-gray-100 text-lg">
+                      <Target className={`w-5 h-5 ${scheme.text}`} />
                       Use Cases
                     </h4>
-                    <ul className="grid gap-2">
+                    <ul className="grid gap-3 pl-2">
                       {lang.useCases.map((useCase, i) => (
-                        <li key={i} className="text-gray-400 flex items-start gap-2">
-                          <span className={`${scheme.text} text-sm`}>•</span>
+                        <li key={i} className="text-gray-400 flex items-start gap-3 text-base font-light">
+                          <span className={`${scheme.text} text-sm mt-1.5`}>◆</span>
                           {useCase}
                         </li>
                       ))}
@@ -174,20 +180,32 @@ export const RoadmapCard: React.FC<{ level: RoadmapLevel; index: number }> = ({ 
                 )}
 
                 {lang.learningResources && (
-                  <div className="space-y-3">
-                    <h4 className="font-medium flex items-center gap-2 text-gray-100">
-                      <BookOpen className={`w-4 h-4 ${scheme.text}`} />
+                  <div className="space-y-4">
+                    <h4 className="font-medium flex items-center gap-3 text-gray-100 text-lg">
+                      <BookOpen className={`w-5 h-5 ${scheme.text}`} />
                       Learning Resources
                     </h4>
-                    <ul className="grid gap-3">
+                    <ul className="grid gap-2">
                       {lang.learningResources.map((resource, i) => (
                         <li key={i}>
                           <Button
                             variant="ghost"
-                            className={`${scheme.text} hover:bg-gray-800/50 text-left w-full justify-start gap-2`}
+                            className={`
+                              ${scheme.text} 
+                              hover:bg-gray-800/30 
+                              text-left w-full 
+                              justify-start 
+                              gap-3 
+                              py-4
+                              text-base
+                              font-light
+                              transition-all
+                              duration-300
+                              rounded-xl
+                            `}
                             onClick={() => window.open(resource.url, '_blank')}
                           >
-                            <ExternalLink className="w-4 h-4" />
+                            <ExternalLink className="w-5 h-5 opacity-70" />
                             {resource.name}
                           </Button>
                         </li>

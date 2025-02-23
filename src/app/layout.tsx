@@ -1,13 +1,8 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Inter } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({
-  subsets: ['latin'],
-  display: 'swap', // Add display swap for better performance
-  preload: true,   // Ensure font is preloaded
-  adjustFontFallback: true, // Improve font fallback handling
-});
+
 
 
 const geistSans = Geist({

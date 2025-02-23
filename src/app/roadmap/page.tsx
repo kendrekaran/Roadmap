@@ -83,97 +83,91 @@ async function generateRoadmap(career: string): Promise<RoadmapResponse> {
   }
 
   try {
-    // Simplified prompt structure
-    const prompt = `Create a programming roadmap for ${career} with EXACTLY this JSON structure and no additional text:
-{
-  "career": "${career}",
-  "levels": [
-    {
-      "level": "Beginner",
-      "emoji": "🎯",
-      "color": "blue",
-      "languages": [
+    const exampleJson = {
+      career: career,
+      levels: [
         {
-          "name": "Language name",
-          "timeToComplete": "X-Y months",
-          "alternatives": ["Alt1", "Alt2"],
-          "description": "Brief description",
-          "keyFeatures": ["Feature 1", "Feature 2", "Feature 3"],
-          "useCases": ["Use case 1", "Use case 2"],
-          "learningResources": [
+          level: "Beginner",
+          emoji: "🎯",
+          color: "blue",
+          languages: [
             {
-              "name": "Resource name",
-              "url": "https://example.com"
+              name: "Python",
+              timeToComplete: "2-3 months",
+              alternatives: ["JavaScript", "Ruby"],
+              description: "A beginner-friendly language for learning programming concepts",
+              keyFeatures: [
+                "Easy to read syntax",
+                "Large standard library",
+                "Great community support"
+              ],
+              useCases: [
+                "Web Development",
+                "Data Science"
+              ],
+              learningResources: [
+                {
+                  name: "Python Official Docs",
+                  url: "https://docs.python.org"
+                }
+              ]
             }
           ]
         }
       ]
-    }
-  ]
-}
+    };
 
-Rules:
-- 3 levels only: Beginner (blue/🎯), Intermediate (purple/⚡), Advanced (gold/🎮)
-- 3-4 languages per level
-- All text must be properly escaped
-- No trailing commas
-- Valid JSONv`;
+    const prompt = `Create a programming roadmap for ${career}. Return a valid JSON object matching this example structure EXACTLY:
+${JSON.stringify(exampleJson, null, 2)}
+
+Required format:
+1. Three levels: "Beginner" (blue/🎯), "Intermediate" (purple/⚡), "Advanced" (gold/🎮)
+2. 3-4 languages per level
+3. Each language must have all fields shown in the example
+4. All URLs must be real and accessible
+5. Keep descriptions concise
+6. Must be valid JSON with no trailing commas
+
+For non-technical careers, return: {"error": "Please enter a technical career path"}`;
 
     const result = await model.generateContent(prompt);
-    let text = result.response.text().trim();
+    const text = result.response.text()
+      .replace(/```json\s*|\s*```/g, '')
+      .replace(/[\u0000-\u001F\u007F-\u009F]/g, '')
+      .trim();
 
-    // Clean and validate JSON
     try {
-      // Remove any markdown formatting
-      text = text.replace(/```json\s*|\s*```/g, '').trim();
-      
-      // Try to find the JSON object boundaries
-      const startIdx = text.indexOf('{');
-      const endIdx = text.lastIndexOf('}');
-      
-      if (startIdx === -1 || endIdx === -1) {
-        throw new Error('Invalid JSON structure');
+      // Extract JSON content
+      const match = text.match(/\{[\s\S]*\}/);
+      if (!match) {
+        throw new Error('No valid JSON found in response');
       }
 
-      // Extract just the JSON part
-      text = text.slice(startIdx, endIdx + 1);
+      const jsonText = match[0];
+      const data = JSON.parse(jsonText);
 
-      // Parse the cleaned JSON
-      const data = JSON.parse(text);
+      // Basic structure validation
+      if ('error' in data) {
+        return { roadmap: null, error: data.error };
+      }
 
-      // Basic validation
       if (!data.career || !Array.isArray(data.levels)) {
-        throw new Error('Missing required fields');
+        throw new Error('Invalid response structure');
       }
 
-      // Ensure exactly 3 levels
-      if (data.levels.length !== 3) {
-        throw new Error('Must have exactly 3 levels');
+      // Validate levels
+      const requiredLevels = ['Beginner', 'Intermediate', 'Advanced'];
+      if (data.levels.length !== 3 || 
+          !data.levels.every((level: { level: string }, i: number) => level.level === requiredLevels[i])) {
+        throw new Error('Invalid levels structure');
       }
 
-      // Validate level structure
-      data.levels.forEach((level: RoadmapLevel) => {
-        if (!level.level || !level.emoji || !level.color || !Array.isArray(level.languages)) {
-          throw new Error('Invalid level structure');
-        }
-        
-        // Validate languages
-        level.languages.forEach((lang: LanguageNode) => {
-          if (!lang.name || !lang.timeToComplete || !lang.description || 
-              !Array.isArray(lang.keyFeatures) || !Array.isArray(lang.useCases) || 
-              !Array.isArray(lang.learningResources)) {
-            throw new Error('Invalid language structure');
-          }
-        });
-      });
-
-      return { roadmap: data as RoadmapData, error: null };
+      return { roadmap: data, error: null };
     } catch (parseError) {
-      console.error('JSON parsing error:', parseError);
-      console.log('Raw response:', text);
+      console.error('Parse error:', parseError);
       return { 
         roadmap: null, 
-        error: 'Failed to parse AI response' 
+        error: 'Invalid AI response format' 
       };
     }
   } catch (error) {
@@ -187,11 +181,11 @@ Rules:
 
 const RoadmapPage = async () => {
   const career = await getData()
-  const { roadmap, error } = await generateRoadmap(career)
+  const { roadmap } = await generateRoadmap(career)
 
   return (
     <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-600/20 via-gray-900 to-black/80">
-      <div className="fixed inset-0 bg-[url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80')] opacity-10 bg-cover bg-center" />
+      <div className="fixed inset-0 bg-[url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80')] opacity-20 bg-cover bg-center" />
       <Navbar />
       
       <div className="relative container mx-auto px-4 py-16">
