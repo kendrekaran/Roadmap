@@ -12,7 +12,7 @@ if (!API_KEY) {
 }
 
 const genAI = new GoogleGenerativeAI(API_KEY)
-const model = genAI.getGenerativeModel({ model: "gemini-pro" })
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
 
 export const metadata: Metadata = {
   title: "Programming Languages Roadmap",
@@ -54,11 +54,9 @@ interface PageData {
 }
 
 
-
-
 async function getData(): Promise<string> {
   try {
-    const response = await fetch("https://sill-path.vercel.app/api/setData", {
+    const response = await fetch("http://localhost:3000/api/setData", {
       cache: "no-store",
       headers: {
         "Content-Type": "application/json",
