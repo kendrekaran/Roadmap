@@ -52,9 +52,9 @@ export default function Navbar() {
 
   const navItems = [
     { href: "/", label: "Home" },
-    { href: "/about", label: "About" },
-    { href: "/pricing", label: "Pricing" },
-    { href: "/contact", label: "Contact Us" },
+    { href: "/", label: "About" },
+    { href: "/", label: "Pricing" },
+    { href: "/", label: "Contact Us" },
   ]
 
   const handleSignOut = () => {
