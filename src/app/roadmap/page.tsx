@@ -53,7 +53,6 @@ interface PageData {
   data: string
 }
 
-
 async function getData(): Promise<string> {
   try {
     const response = await fetch("https://sill-path.vercel.app/api/setData", {

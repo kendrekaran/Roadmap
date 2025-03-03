@@ -2,17 +2,10 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import { signIn, signOut } from "@comp/auth"
-import { Button } from "@comp/components/ui/button"
 import { Camera, Menu, ChevronRight } from "lucide-react"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@comp/components/ui/dropdown-menu"
-import { useSession } from "next-auth/react"
-import { redirect } from "next/navigation"
+import { Button } from "@comp/components/ui/button"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@comp/components/ui/dropdown-menu"
+import { useSession, signIn, signOut } from "next-auth/react"
 import { ThemeToggle } from "@comp/components/theme-toggle"
 
 interface User {
@@ -26,7 +19,32 @@ interface ProfileImageProps {
   size?: "desktop" | "mobile"
 }
 
-type FormAction = () => Promise<void>
+function ProfileImage({ user, size = "desktop" }: ProfileImageProps) {
+  const imageSize = size === "desktop" ? "w-12 h-12" : "w-10 h-10"
+
+  if (!user?.image) {
+    return (
+      <div
+        className={`${imageSize} rounded-xl bg-gradient-to-r from-blue-600/80 to-sky-600/80 dark:from-blue-600/80 dark:to-sky-600/80 light:from-blue-500/90 light:to-sky-500/90 flex items-center justify-center`}
+      >
+        <Camera className={size === "desktop" ? "h-6 w-6" : "h-5 w-5"} />
+      </div>
+    )
+  }
+
+  return (
+    <div className="relative w-full h-full">
+      <Image
+        src={user.image || "/placeholder.svg"}
+        alt={`${user.name || "User"}'s profile`}
+        width={size === "desktop" ? 48 : 40}
+        height={size === "desktop" ? 48 : 40}
+        className="object-cover rounded-xl"
+        priority
+      />
+    </div>
+  )
+}
 
 export default function Navbar() {
   const { data: session } = useSession()
@@ -39,41 +57,12 @@ export default function Navbar() {
     { href: "/contact", label: "Contact Us" },
   ]
 
-  const ProfileImage = ({ user, size = "desktop" }: ProfileImageProps) => {
-    const imageSize = size === "desktop" ? "w-12 h-12" : "w-10 h-10"
-
-    if (!user?.image) {
-      return (
-        <div
-          className={`${imageSize} rounded-xl bg-gradient-to-r from-blue-600/80 to-sky-600/80 dark:from-blue-600/80 dark:to-sky-600/80 light:from-blue-500/90 light:to-sky-500/90 flex items-center justify-center`}
-        >
-          <Camera className={size === "desktop" ? "h-6 w-6" : "h-5 w-5"} />
-        </div>
-      )
-    }
-
-    return (
-      <div className="relative w-full h-full">
-        <Image
-          src={user.image || "/placeholder.svg"}
-          alt={`${user.name || "User"}'s profile`}
-          width={size === "desktop" ? 48 : 40}
-          height={size === "desktop" ? 48 : 40}
-          className="object-cover rounded-xl"
-          priority
-        />
-      </div>
-    )
+  const handleSignOut = () => {
+    signOut({ callbackUrl: '/' })
   }
 
-  const handleSignOut: FormAction = async () => {
-    await signOut()
-    redirect("/")
-  }
-
-  const handleSignIn: FormAction = async () => {
-    await signIn("google", { redirectTo: "/" })
-    redirect("/")
+  const handleSignIn = () => {
+    signIn('google', { callbackUrl: '/' })
   }
 
   return (
@@ -139,8 +128,8 @@ export default function Navbar() {
                         </span>
                       </DropdownMenuItem>
                       <DropdownMenuItem className="hover:bg-gray-100 dark:hover:bg-white/10 focus:bg-gray-100 dark:focus:bg-white/10 px-4 py-3">
-                        <form action={handleSignOut}>
-                          <button className="w-full text-left text-gray-700 dark:text-white/90 group">
+                        <form>
+                          <button type="button" onClick={handleSignOut} className="w-full text-left text-gray-700 dark:text-white/90 group">
                             <span className="relative flex items-center">
                               Sign Out
                               <ChevronRight className="w-4 h-4 ml-auto opacity-50 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all duration-200" />
@@ -152,8 +141,10 @@ export default function Navbar() {
                   </DropdownMenu>
                 </div>
               ) : (
-                <form action={handleSignIn}>
+                <form>
                   <Button
+                    type="button"
+                    onClick={handleSignIn}
                     variant="outline"
                     size="lg"
                     className="relative bg-white/5 dark:bg-white/5 light:bg-gray-100 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 text-gray-700 dark:text-white border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20 group px-6"
@@ -217,8 +208,8 @@ export default function Navbar() {
                   ))}
                   <DropdownMenuItem className="px-4 py-3 hover:bg-gray-100 dark:hover:bg-white/10 focus:bg-gray-100 dark:focus:bg-white/10">
                     {user ? (
-                      <form action={handleSignOut} className="w-full">
-                        <button className="w-full text-left text-gray-700 dark:text-white/90 group">
+                      <form>
+                        <button type="button" onClick={handleSignOut} className="w-full text-left text-gray-700 dark:text-white/90 group">
                           <span className="relative flex items-center">
                             Sign Out
                             <ChevronRight className="w-4 h-4 ml-auto opacity-50 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all duration-200" />
@@ -226,8 +217,8 @@ export default function Navbar() {
                         </button>
                       </form>
                     ) : (
-                      <form action={handleSignIn} className="w-full">
-                        <button className="w-full text-left text-gray-700 dark:text-white/90 group">
+                      <form>
+                        <button type="button" onClick={handleSignIn} className="w-full text-left text-gray-700 dark:text-white/90 group">
                           <span className="relative flex items-center">
                             <img
                               src="/google.svg"
