@@ -7,6 +7,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Session } from "next-auth"
 import { redirect } from "next/navigation"
 import { routes } from "../lib/routes"
+import { ThemeToggle } from "@comp/components/theme-toggle"
+
 interface User {
   image?: string | null
   name?: string | null
@@ -64,9 +66,9 @@ export default async function Navbar() {
   }
 
   return (
-    <div className="top-0 left-0 right-0 z-50 px-4 py-4 md:py-6">
+    <div className="fixed top-0 left-0 right-0 z-50 px-4 py-4 md:py-6">
       <div className="mx-auto max-w-5xl">
-        <nav className="relative rounded-2xl bg-gradient-to-r from-black/80 to-black/60 backdrop-blur-xl border border-white/10 shadow-2xl shadow-black/20">
+        <nav className="relative rounded-2xl bg-white/80 dark:bg-black/80 backdrop-blur-xl border border-gray-200/20 dark:border-white/10 shadow-2xl shadow-black/5 dark:shadow-black/20">
           <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/10 to-sky-500/10 opacity-50" />
           <div className="flex justify-between items-center h-16 md:h-20 px-4 md:px-8">
             <div className="flex items-center">
@@ -90,7 +92,8 @@ export default async function Navbar() {
               </div>
             </div>
 
-            <div className="hidden md:block">
+            <div className="hidden md:flex items-center gap-4">
+              <ThemeToggle />
               {user ? (
                 <div className="flex items-center space-x-4">
                   <DropdownMenu>
@@ -140,7 +143,8 @@ export default async function Navbar() {
               )}
             </div>
 
-            <div className="block md:hidden">
+            <div className="flex md:hidden items-center gap-2">
+              <ThemeToggle />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="relative h-10 w-10 text-white/90 hover:text-white hover:bg-white/10 rounded-xl">

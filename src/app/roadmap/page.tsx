@@ -1,18 +1,23 @@
 import type { Metadata } from "next"
 import React from "react"
 import Navbar from "../component/Navbar"
-import { GoogleGenerativeAI } from "@google/generative-ai"
 import { Code2 } from "lucide-react"
 import { RoadmapCard } from "../component/Roadmap"
-
+import OpenAI from 'openai';
 
 const API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY
 if (!API_KEY) {
   throw new Error("Missing Gemini API key")
 }
 
-const genAI = new GoogleGenerativeAI(API_KEY)
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
+const client = new OpenAI({
+  baseURL: "https://openrouter.ai/api/v1",
+  apiKey: process.env.OPENROUTER_API_KEY || "",
+  defaultHeaders: {
+    "HTTP-Referer": process.env.NEXT_PUBLIC_SITE_URL,
+    "X-Title": process.env.NEXT_PUBLIC_SITE_NAME,
+  }
+});
 
 export const metadata: Metadata = {
   title: "Programming Languages Roadmap",
@@ -80,58 +85,54 @@ async function generateRoadmap(career: string): Promise<RoadmapResponse> {
   }
 
   try {
-    const exampleJson = {
-      career: career,
-      levels: [
+    const completion = await client.chat.completions.create({
+      model: "deepseek/deepseek-r1-distill-llama-70b:free",
+      messages: [
         {
-          level: "Beginner",
-          emoji: "🎯",
-          color: "blue",
-          languages: [
-            {
-              name: "Python",
-              timeToComplete: "2-3 months",
-              alternatives: ["JavaScript", "Ruby"],
-              description: "A beginner-friendly language for learning programming concepts",
-              keyFeatures: [
-                "Easy to read syntax",
-                "Large standard library",
-                "Great community support"
-              ],
-              useCases: [
-                "Web Development",
-                "Data Science"
-              ],
-              learningResources: [
-                {
-                  name: "Python Official Docs",
-                  url: "https://docs.python.org"
-                }
-              ]
-            }
-          ]
+          role: "system",
+          content: "Create concise technical learning roadmaps in JSON format."
+        },
+        {
+          role: "user",
+          content: `Create a learning roadmap for ${career} with exactly:
+- 3 levels (Beginner 🎯, Intermediate ⚡, Advanced 🎮)
+- 2 most important technologies per level
+- Brief descriptions
+- Only essential features
+- Main use cases
+- One key learning resource (URL)
+Format as valid JSON:
+{
+  "career": "${career}",
+  "levels": [
+    {
+      "level": "Beginner",
+      "emoji": "🎯",
+      "color": "blue",
+      "languages": [
+        {
+          "name": "Tech Name",
+          "timeToComplete": "Duration",
+          "alternatives": ["Alt1"],
+          "description": "Brief description",
+          "keyFeatures": ["Key1", "Key2"],
+          "useCases": ["Use1", "Use2"],
+          "learningResources": [{"name": "Resource", "url": "URL"}]
         }
       ]
-    };
+    }
+  ]
+}`
+        }
+      ],
+      temperature: 0.7,
+      max_tokens: 2000,
+    });
 
-    const prompt = `Create a programming roadmap for ${career}. Return a valid JSON object matching this example structure EXACTLY:
-${JSON.stringify(exampleJson, null, 2)}
-
-Required format:
-1. Three levels: "Beginner" (blue/🎯), "Intermediate" (purple/⚡), "Advanced" (gold/🎮)
-2. 3-4 languages per level
-3. Each language must have all fields shown in the example
-4. All URLs must be real and accessible
-5. Keep descriptions concise
-6. Must be valid JSON with no trailing commas
-
-For non-technical careers, return: {"error": "Please enter a technical career path"}`;
-
-    const result = await model.generateContent(prompt);
-    const text = result.response.text()
-      .replace(/```json\s*|\s*```/g, '')
-      .replace(/[\u0000-\u001F\u007F-\u009F]/g, '')
-      .trim();
+    const text = completion.choices[0].message.content;
+    if (!text) {
+      throw new Error('No response from AI');
+    }
 
     try {
       // Extract JSON content
@@ -181,7 +182,7 @@ const RoadmapPage = async () => {
   const { roadmap } = await generateRoadmap(career)
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-600/20 via-gray-900 to-black/80">
+    <div className="min-h-screen py-24 sm:py-32 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-600/20 via-gray-900 to-black/80">
       <div className="fixed inset-0 bg-[url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80')] opacity-20 bg-cover bg-center" />
       <Navbar />
       
